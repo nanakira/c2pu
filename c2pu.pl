@@ -12,7 +12,7 @@ print "\@startuml hsm.png\n\n";
 
 while(<IN>) {
   if (/START_BASIC_HSM_STATE_TABLE/){
-    &parseStateTable();
+    parseStateTable();
   }
 }
 
@@ -36,19 +36,21 @@ sub parseStateTable {
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
       if ($cur_state eq '' && $cur_parent eq ''){
-        print "STATE $state\{";
+        print "STATE $state \{";
         $depth++;
         $cur_state = $state;
         $cur_parent = $parent;
       }
       elsif ($parent eq $cur_parent){
-        print "\nSTATE $state";
+        print "\n";
+        printStateIndented($depth, $state);
         $cur_state = $state;
       }
       elsif ($parent eq $cur_state){
-        print "\{\nSTATE $state";
+        print " \{\n";
         $depth++;
         push @stack, $cur_parent;
+        printStateIndented($depth, $state);
         $cur_parent = $parent;
         $cur_state = $state;
       }
@@ -57,9 +59,10 @@ sub parseStateTable {
           last if ($depth == 0);
           $cur_parent = pop(@stack);
           $depth--;
-          print "\n\}";
+          print "\n", "  " x $depth, "\}";
           if ($parent eq $cur_parent){
-            print "\nSTATE $state";
+            print "\n";
+            printStateIndented($depth, $state);
             $cur_state = $state;
             last;
           }
@@ -69,4 +72,9 @@ sub parseStateTable {
       }
     }
   }
+}
+
+sub printStateIndented {
+  my ($depth, $state) = @_;
+  print ("  " x $depth, "STATE ", $state);
 }
