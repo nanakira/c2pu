@@ -56,6 +56,7 @@ sub parseStateTable {
       }
       else {
         while (1){
+          # Pop stack until root or correct depth
           last if ($depth == 0);
           $cur_parent = pop(@stack);
           $depth--;
