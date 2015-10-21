@@ -23,18 +23,21 @@ close(IN);
 
 
 sub parseStateTable {
+  my $depth = 0;
+  my @stack = ();
   my $cur_state = '';
   my $cur_parent = '';
   my $domain, my $parent, my $state;
   while(<IN>) {
     if (/END_BASIC_HSM_STATE_TABLE/) {
+      print "\n\}\n";
       return;
     }
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
-#      print "parent: $2, state: $3, cur_parent: $cur_parent, cur_state: $cur_state\n";
       if ($cur_state eq '' && $cur_parent eq ''){
-        print "STATE $state \{";
+        print "STATE $state\{";
+        $depth++;
         $cur_state = $state;
         $cur_parent = $parent;
       }
@@ -43,11 +46,27 @@ sub parseStateTable {
         $cur_state = $state;
       }
       elsif ($parent eq $cur_state){
-        print "\{\nSTATE $state"};
+        print "\{\nSTATE $state";
+        $depth++;
+        push @stack, $cur_parent;
         $cur_parent = $parent;
         $cur_state = $state;
-#      print ("$1, $2, $3\n");
+      }
+      else {
+        while (1){
+          last if ($depth == 0);
+          $cur_parent = pop(@stack);
+          $depth--;
+          print "\n\}";
+          if ($parent eq $cur_parent){
+            print "\nSTATE $state";
+            $cur_state = $state;
+            last;
+          }
+          else {
+          }
+        }
+      }
     }
-#    print (OUT $_)
   }
 }
