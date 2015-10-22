@@ -14,6 +14,12 @@ while(<IN>) {
   if (/START_BASIC_HSM_STATE_TABLE/){
     parseStateTable();
   }
+  elsif (/START_TRANSITION_TABLE/){
+    parseTransitionTable();
+  }
+  elsif (/START_INTERNAL_TRANSITION_TABLE/){
+    parseIntTransitionTable();
+  }
 }
 
 print "\n\@enduml\n";
@@ -30,7 +36,7 @@ sub parseStateTable {
   my $domain, my $parent, my $state;
   while(<IN>) {
     if (/END_BASIC_HSM_STATE_TABLE/) {
-      print "\n\}\n";
+      print "\n\}\n\n";
       return;
     }
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
@@ -78,4 +84,28 @@ sub parseStateTable {
 sub printStateIndented {
   my ($depth, $state) = @_;
   print ("  " x $depth, "STATE ", $state);
+}
+
+sub parseTransitionTable {
+  while(<IN>) {
+    if (/END_TRANSITION_TABLE/) {
+      print "\n";
+      return;
+    }
+    elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
+      print "$2 --> $3: $4\n";
+    }
+  }
+}
+
+sub parseIntTransitionTable {
+  while(<IN>) {
+    if (/END_INTERNAL_TRANSITION_TABLE/) {
+      print "\n";
+      return;
+    }
+    elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
+      print "$2 --> $2: $3 \/ $4\n";
+    }
+  }
 }
