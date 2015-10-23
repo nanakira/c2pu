@@ -20,9 +20,12 @@ while(<IN>) {
   elsif (/START_INTERNAL_TRANSITION_TABLE/){
     parseIntTransitionTable();
   }
+  elsif (/START_ACTION_TABLE/){
+    parseActionTable();
+  }
 }
 
-print "\n\@enduml\n";
+print "\@enduml\n";
 
 close(OUT);
 close(IN);
@@ -39,6 +42,7 @@ sub parseStateTable {
       print "\n\}\n\n";
       return;
     }
+    elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
       if ($cur_state eq '' && $cur_parent eq ''){
@@ -92,6 +96,7 @@ sub parseTransitionTable {
       print "\n";
       return;
     }
+    elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       print "$2 --> $3: $4\n";
     }
@@ -104,8 +109,23 @@ sub parseIntTransitionTable {
       print "\n";
       return;
     }
+    elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       print "$2 --> $2: $3 \/ $4\n";
+    }
+  }
+}
+
+sub parseActionTable {
+  while(<IN>) {
+    if (/END_ACTION_TABLE/) {
+      print "\n";
+      return;
+    }
+    elsif (/^\s*\/\//) {next}
+    elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
+      print "$2: entry / $3\n" if ($3 ne "NULL");
+      print "$2: exit / $4\n" if ($4 ne "NULL");
     }
   }
 }
