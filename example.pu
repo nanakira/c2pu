@@ -1,0 +1,25 @@
+@startuml hsm.png
+
+STATE STATE_A {
+  STATE STATE_B {
+    STATE STATE_B1
+    STATE STATE_B2 {
+      STATE STATE_B2a
+      STATE STATE_B2b
+    }
+  }
+  STATE STATE_C
+}
+
+STATE_A --> STATE_B: HSM_EVENT_A
+STATE_B --> STATE_B2: HSM_EVENT_B
+
+STATE_ROOT --> STATE_ROOT: HSM_EVENT_C / callback_A
+STATE_B --> STATE_B: HSM_EVENT_D / callback_B
+
+STATE_ROOT: entry / entry_A
+STATE_A: exit / exit_B
+STATE_B: entry / entry_C
+STATE_B: exit / exit_D
+
+@enduml

@@ -8,7 +8,7 @@ $outputfile =~ s/(.*)\.(.+)$/$1.pu/;
 open( OUT, ">", $outputfile )
   or die "Cannot open $outputfile with write permission: $!";
 
-print "\@startuml hsm.png\n\n";
+print OUT "\@startuml hsm.png\n\n";
 
 while(<IN>) {
   if (/START_BASIC_HSM_STATE_TABLE/){
@@ -25,7 +25,7 @@ while(<IN>) {
   }
 }
 
-print "\@enduml\n";
+print OUT "\@enduml\n";
 
 close(OUT);
 close(IN);
@@ -39,25 +39,25 @@ sub parseStateTable {
   my $domain, my $parent, my $state;
   while(<IN>) {
     if (/END_BASIC_HSM_STATE_TABLE/) {
-      print "\n\}\n\n";
+      print OUT "\n\}\n\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
       if ($cur_state eq '' && $cur_parent eq ''){
-        print "STATE $state \{";
+        print OUT "STATE $state \{";
         $depth++;
         $cur_state = $state;
         $cur_parent = $parent;
       }
       elsif ($parent eq $cur_parent){
-        print "\n";
+        print OUT "\n";
         printStateIndented($depth, $state);
         $cur_state = $state;
       }
       elsif ($parent eq $cur_state){
-        print " \{\n";
+        print OUT " \{\n";
         $depth++;
         push @stack, $cur_parent;
         printStateIndented($depth, $state);
@@ -70,9 +70,9 @@ sub parseStateTable {
           last if ($depth == 0);
           $cur_parent = pop(@stack);
           $depth--;
-          print "\n", "  " x $depth, "\}";
+          print OUT "\n", "  " x $depth, "\}";
           if ($parent eq $cur_parent){
-            print "\n";
+            print OUT "\n";
             printStateIndented($depth, $state);
             $cur_state = $state;
             last;
@@ -87,18 +87,18 @@ sub parseStateTable {
 
 sub printStateIndented {
   my ($depth, $state) = @_;
-  print ("  " x $depth, "STATE ", $state);
+  print OUT ("  " x $depth, "STATE ", $state);
 }
 
 sub parseTransitionTable {
   while(<IN>) {
     if (/END_TRANSITION_TABLE/) {
-      print "\n";
+      print OUT "\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print "$2 --> $3: $4\n";
+      print OUT "$2 --> $3: $4\n";
     }
   }
 }
@@ -106,12 +106,12 @@ sub parseTransitionTable {
 sub parseIntTransitionTable {
   while(<IN>) {
     if (/END_INTERNAL_TRANSITION_TABLE/) {
-      print "\n";
+      print OUT "\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print "$2 --> $2: $3 \/ $4\n";
+      print OUT "$2 --> $2: $3 \/ $4\n";
     }
   }
 }
@@ -119,13 +119,13 @@ sub parseIntTransitionTable {
 sub parseActionTable {
   while(<IN>) {
     if (/END_ACTION_TABLE/) {
-      print "\n";
+      print OUT "\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print "$2: entry / $3\n" if ($3 ne "NULL");
-      print "$2: exit / $4\n" if ($4 ne "NULL");
+      print OUT "$2: entry / $3\n" if ($3 ne "NULL");
+      print OUT "$2: exit / $4\n" if ($4 ne "NULL");
     }
   }
 }
