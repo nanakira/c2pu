@@ -47,6 +47,8 @@ sub parseStateTable {
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
+      $parent =~ s/HSM_STATE_//;
+      $state =~ s/HSM_STATE_//;
       if ($cur_state eq '' && $cur_parent eq ''){
         print OUT "STATE $parent \{\n";
         $depth++;
@@ -106,7 +108,11 @@ sub parseTransitionTable {
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print OUT "$2 --> $3: $4\n";
+      my $from = $2; my $to = $3; my $by = $4;
+      $from =~ s/HSM_STATE_//;
+      $to =~ s/HSM_STATE_//;
+      $by =~ s/HSM_EVENT_//;
+      print OUT "$from --> $to: $by\n";
     }
   }
 }
@@ -120,7 +126,10 @@ sub parseIntTransitionTable {
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print OUT "$2: $3 \/ $4\n";
+      my $in = $2; my $by = $3; my $callback = $4;
+      $in =~ s/HSM_STATE_//;
+      $by =~ s/HSM_EVENT_//;
+      print OUT "$in: $by \/ $callback\n";
     }
   }
 }
@@ -134,8 +143,10 @@ sub parseActionTable {
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print OUT "$2: entry / $3\n" if ($3 ne "NULL");
-      print OUT "$2: exit / $4\n" if ($4 ne "NULL");
+      my $in = $2; my $entryaction = $3; my $exitaction = $4;
+      $in =~ s/HSM_STATE_//;
+      print OUT "$in: entry / $entryaction\n" if ($entryaction ne "NULL");
+      print OUT "$in: exit / $exitaction\n" if ($exitaction ne "NULL");
     }
   }
 }
