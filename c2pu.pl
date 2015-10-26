@@ -40,14 +40,14 @@ sub parseStateTable {
   print OUT "' ### State structure definition ###\n";
   while(<IN>) {
     if (/END_(BASIC_)?HSM_STATE_TABLE/) {
-      print OUT "\n\}\n\n";
+        popStackCloseBracket();
+        print OUT "\n\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
       if ($cur_state eq '' && $cur_parent eq ''){
-#        print OUT "STATE $state \{";
         print OUT "STATE $parent \{\n";
         $depth++;
         printStateIndented($depth, $state);
@@ -68,29 +68,33 @@ sub parseStateTable {
         $cur_state = $state;
       }
       else {
-        while (1){
-          # Pop stack until root or correct depth
-          last if ($depth == 0);
-          $cur_parent = pop(@stack);
-          $depth--;
-          print OUT "\n", "  " x $depth, "\}";
-          if ($parent eq $cur_parent){
-            print OUT "\n";
-            printStateIndented($depth, $state);
-            $cur_state = $state;
-            last;
-          }
-          else {
-          }
-        }
+        popStackCloseBracket();
       }
     }
   }
-}
 
-sub printStateIndented {
-  my ($depth, $state) = @_;
-  print OUT ("  " x $depth, "STATE ", $state);
+  sub printStateIndented {
+    my ($depth, $state) = @_;
+    print OUT ("  " x $depth, "STATE ", $state);
+  }
+
+  sub popStackCloseBracket {
+    while (1){
+      # Pop stack until root or correct depth
+      last if ($depth == 0);
+      $cur_parent = pop(@stack);
+      $depth--;
+      print OUT "\n", "  " x $depth, "\}";
+      if ($parent eq $cur_parent){
+        print OUT "\n";
+        printStateIndented($depth, $state);
+        $cur_state = $state;
+        last;
+      }
+      else {
+      }
+    }
+  }
 }
 
 sub parseTransitionTable {
