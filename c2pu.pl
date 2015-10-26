@@ -8,7 +8,7 @@ $outputfile =~ s/(.*)\.(.+)$/$1.pu/;
 open( OUT, ">", $outputfile )
   or die "Cannot open $outputfile with write permission: $!";
 
-print OUT "\@startuml hsm.png\n\n";
+print OUT "\@startuml $1.png\n\n";
 
 while(<IN>) {
   if (/START_(BASIC_)?HSM_STATE_TABLE/){
@@ -47,8 +47,10 @@ sub parseStateTable {
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
       $parent = $2; $state = $3;
       if ($cur_state eq '' && $cur_parent eq ''){
-        print OUT "STATE $state \{";
+#        print OUT "STATE $state \{";
+        print OUT "STATE $parent \{\n";
         $depth++;
+        printStateIndented($depth, $state);
         $cur_state = $state;
         $cur_parent = $parent;
       }
