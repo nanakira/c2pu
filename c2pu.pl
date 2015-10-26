@@ -11,16 +11,16 @@ open( OUT, ">", $outputfile )
 print OUT "\@startuml hsm.png\n\n";
 
 while(<IN>) {
-  if (/START_BASIC_HSM_STATE_TABLE/){
+  if (/START_(BASIC_)?HSM_STATE_TABLE/){
     parseStateTable();
   }
-  elsif (/START_TRANSITION_TABLE/){
+  elsif (/START_(BASIC_)?TRANSITION_TABLE/){
     parseTransitionTable();
   }
-  elsif (/START_INTERNAL_TRANSITION_TABLE/){
+  elsif (/START_(BASIC_)?INTERNAL_TRANSITION_TABLE/){
     parseIntTransitionTable();
   }
-  elsif (/START_ACTION_TABLE/){
+  elsif (/START_(BASIC_)?ACTION_TABLE/){
     parseActionTable();
   }
 }
@@ -37,8 +37,9 @@ sub parseStateTable {
   my $cur_state = '';
   my $cur_parent = '';
   my $domain, my $parent, my $state;
+  print OUT "' ### State structure definition ###\n";
   while(<IN>) {
-    if (/END_BASIC_HSM_STATE_TABLE/) {
+    if (/END_(BASIC_)?HSM_STATE_TABLE/) {
       print OUT "\n\}\n\n";
       return;
     }
@@ -91,8 +92,9 @@ sub printStateIndented {
 }
 
 sub parseTransitionTable {
+  print OUT "' ### External state transition ###\n";
   while(<IN>) {
-    if (/END_TRANSITION_TABLE/) {
+    if (/END_(BASIC_)?TRANSITION_TABLE/) {
       print OUT "\n";
       return;
     }
@@ -104,21 +106,23 @@ sub parseTransitionTable {
 }
 
 sub parseIntTransitionTable {
+  print OUT "' ### Internal event ###\n";
   while(<IN>) {
-    if (/END_INTERNAL_TRANSITION_TABLE/) {
+    if (/END_(BASIC_)?INTERNAL_TRANSITION_TABLE/) {
       print OUT "\n";
       return;
     }
     elsif (/^\s*\/\//) {next}
     elsif (/\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/) {
-      print OUT "$2 --> $2: $3 \/ $4\n";
+      print OUT "$2: $3 \/ $4\n";
     }
   }
 }
 
 sub parseActionTable {
+  print OUT "' ### entry / exit action ###\n";
   while(<IN>) {
-    if (/END_ACTION_TABLE/) {
+    if (/END_(BASIC_)?ACTION_TABLE/) {
       print OUT "\n";
       return;
     }
